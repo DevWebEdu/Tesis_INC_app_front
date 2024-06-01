@@ -26,13 +26,13 @@ const SideBar = () => {
 
 
   return (
-    <div className='md:w-72 h-lvh shadow-2xl rounded-lg flex flex-col justify-start '>
+    <div className='  md:w-72 hidden h-lvh shadow-2xl rounded-lg md:flex md:flex-col   '>
       {/* Cambio de Tema y Cerrar Sesion Crear Componente <HelpersAccount/> */}
       <HelpersAccount/>
 
 
-      <div className='pt-10 '>
-      <img src="../assets/user-icon-svgrepo-com.svg" alt="imagen_usuario" />
+      <div className='py-10 mb-10 mx-auto  '>
+      <img src="../assets/user-icon-svgrepo-com.svg" alt="imagen_usuario" className=' w-full max-w-[120x]' />
       </div>
       
       
