@@ -1,12 +1,17 @@
 import React from 'react'
 import { Outlet } from 'react-router-dom'
 import SideBar from '../components/SideBar'
+import useAuth from '../hooks/useAuth'
 
 const DashboardLayout = () => {
+
+  const {user,error } = useAuth({
+    middleware:'auth'
+  })
   return (
-    <div className='md:flex  '>
+    <div className='flex  '>
         <SideBar/>
-        <div className='w-full  p-3 bg-slate-00 '>
+        <div className='w-full  p-5  '>
         <Outlet/>
         </div>
         

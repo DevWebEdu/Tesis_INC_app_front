@@ -5,6 +5,7 @@ import AuthLayout from "./layouts/AuthLayout";
 import Login from "./views/Login";
 import Indicencias from "./views/Indicencias";
 import Users from "./views/Users";
+import IncEdit from "./views/IncEdit";
 
 
 const router = createBrowserRouter([
@@ -23,7 +24,11 @@ const router = createBrowserRouter([
         {
             path: '/users',
             element: <Users/>
-        }   
+        } ,
+        {
+            path : '/incs/:inc_id',
+            element : <IncEdit/>
+        }  
     ]
     },
     {
