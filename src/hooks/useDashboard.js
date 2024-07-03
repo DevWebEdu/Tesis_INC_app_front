@@ -43,11 +43,26 @@ const useDashboard = () => {
         }
     }
 
+    const eliminandoIncidencia = async(id) => {
+        try {
+            const {data} = await clienteAxios.delete(`/api/dashboard/${id}`,{
+                headers:{
+                    Authorization:`Bearer ${token}`
+                }
+            })
+
+            return data
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     
 
     return {
         AgregarIncidenciaDashboard,
-        consultarIncidenciaDashboard
+        consultarIncidenciaDashboard,
+        eliminandoIncidencia
     }
 }
 

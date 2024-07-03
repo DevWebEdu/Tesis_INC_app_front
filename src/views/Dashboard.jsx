@@ -12,7 +12,7 @@ import Alerta from '../components/Alerta'
 
 const Dashboard = () => {
   const inputInc = createRef()
-  const [categoria, setCategoria] = useState('Elige la aplicacion')
+  const [categoria, setCategoria] = useState()
   const navigate = useNavigate()
   const [errores, setErrores] = useState([])
   const { user } = useAuth({
@@ -34,9 +34,8 @@ const Dashboard = () => {
     const dataSimplify = data.data.data.sort((a)=>{
       if(a.user === user.username){
         return -1
-      }else {
-        return 1
       }
+    
     })
 
     return dataSimplify
@@ -62,12 +61,15 @@ const Dashboard = () => {
     }
     const data = await AgregarIncidenciaDashboard(datos, setErrores)
     if (data) {
-      navigate(`/incs/${inputInc.current.value}`);
+      // navigate(`/incs/${inputInc.current.value}`);
+      navigate('/');
     }
   }
 
   const handleChangeSelect = e => {
+    
     setCategoria(e.target.value)
+  
   }
 
   return (
@@ -111,7 +113,7 @@ const Dashboard = () => {
         >
           <h3 className='text-base font-black' >Se estan resolviendo las incidencias</h3>
 
-          <div className='grid md:grid-cols-4  sm:grid-cols-2 grid-cols-1   gap-4 mt-5' >
+          <div className='grid xl::grid-cols-4 md:grid-cols-3  sm:grid-cols-2 grid-cols-1   gap-4 mt-5' >
             {/* En este apartado conjuntamente con el Backend y la tabla inc-atencion estaran solo las  inc que esten en estado 1 , lo que significa que estan siendo atendidas en ese momento, por otro lado las que tengan estado 2 son las que ya fueron atendidas y deben estar en la tabla inc-atendidas */}
             {
               data ? 

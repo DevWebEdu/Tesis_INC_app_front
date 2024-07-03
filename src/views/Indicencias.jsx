@@ -9,15 +9,18 @@ import { useNavigate } from 'react-router-dom'
 import ButtonExcel from '../components/ButtonExcel'
 import ReportPDF from '../reports/ReportPDF'
 import { PDFDownloadLink } from '@react-pdf/renderer'
+import { useTiming } from '../hooks/useTiming'
 
 const Indicencias = () => {
   const navigate = useNavigate()
+  const { agregandoDataCronometrada } = useTiming()
   const [incidencias, setIncidencias] = useState([])
   const [paginaActual, setPaginaActual] = useState(1)
   const [ultipaPagina, setUltimaPagina] = useState()
   const [categoria, setCategoria] = useState()
   const [busqueda, setBusqueda] = useState('')
-  const [errores, setErrores] = useState({})
+  const [minutes, setMinutes] = useState(0)
+  const [seconds, setSeconds] = useState(0)
   const token = localStorage.getItem('AUTH_TOKEN')
   const fechaEnvioFromRef = createRef()
   const fechaEnvioToRef = createRef()
@@ -81,6 +84,15 @@ const Indicencias = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    var timer = setInterval(() => {
+      setSeconds(seconds + 1)
+      if (seconds === 59) {
+        setMinutes(minutes + 1)
+        setSeconds(0)
+      }
+
+    }, 1000)
+
     const fecha_incio = fechaEnvioFromRef.current.value
     const fecha_fin = fechaEnvioToRef.current.value
     const apps_id = categoria
@@ -94,48 +106,130 @@ const Indicencias = () => {
     } else {
       //por si no envia el dato de id_app
       if (!apps_id || apps_id === 'Elige la aplicacion') {
+
         if (fecha_incio === '' || fecha_fin === '') {
+
           Swal.fire({
             title: 'Se deben colocar las dos fechas '
           })
+
           navigate('/incs');
         } else {
+
           const datos = {
             "fecha_envio_from": fecha_incio,
             "fecha_envio_to": fecha_fin
           }
-          console.log(datos)
+
+          const datosTiming = {
+            origen: 'bticket',
+            tiempo: `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds} `
+          }
+
+
+          //insertamos el tiempo de 
+          const { data: resultTiming } = await agregandoDataCronometrada(datosTiming);
+
           const { data } = await filtrarIncidencias(datos)
 
-          setIncidencias(data)
+          if (data && resultTiming.result) {
+
+
+            Swal.fire({
+              title: 'Busqueda realizada con éxito',
+              text: `La busqueda tomó ${resultTiming.data[0].tiempo}`,
+              icon: 'success',
+              timer: 4000
+            })
+            setIncidencias(data)
+          }
+
+
         }
+
       } else {
+
         if (fecha_incio === '' || fecha_fin === '') {
+
           Swal.fire({
             title: 'Se deben colocar las dos fechas '
           })
+
           navigate('/incs');
         } else {
+
           const datos = {
             "apps_id": apps_id,
             "fecha_envio_from": fecha_incio,
             "fecha_envio_to": fecha_fin
 
           }
-          console.log(datos)
+
+          const datosTiming = {
+            origen: 'bticket',
+            tiempo: `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds} `
+          }
+
+
+          //insertamos el tiempo de 
+          const { data: resultTiming } = await agregandoDataCronometrada(datosTiming);
+
           const { data } = await filtrarIncidencias(datos)
-          setIncidencias(data)
+
+          if (data && resultTiming.result) {
+
+
+            Swal.fire({
+              title: 'Busqueda realizada con éxito',
+              text: `La busqueda tomó ${resultTiming.data[0].tiempo}`,
+              icon: 'success',
+              timer: 4000
+            })
+            setIncidencias(data)
+          }
         }
 
       }
+
     }
-
-
-
+    clearInterval(timer)
   }
 
   const handleChangeSelect = e => {
     setCategoria(e.target.value)
+  }
+
+//midiendo el tiempo de cuanto demora la descarga del pdf
+  const  DownloadPDF = async(blob,url) => {
+    console.log(blob,url)
+     var timer = setInterval(() => {
+       setSeconds(seconds + 1)
+       if (seconds === 59) {
+       setMinutes(minutes + 1)
+        setSeconds(0)
+      }
+
+     }, 1000)
+
+     if(blob && url){
+       const datosTiming = {
+         origen: 'ereporte',
+         tiempo: `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds} `
+       }
+
+
+      //insertamos el tiempo de 
+      const { data: resultTiming } = await agregandoDataCronometrada(datosTiming);
+
+       Swal.fire({
+         title: 'PFD descargado correctamente',
+         text: `La generacion del PDF tomó ${resultTiming.data[0].tiempo}` ,
+        icon: 'success',
+         timer: 4000,
+        
+       })
+       clearInterval(timer)
+     }
   }
 
   useEffect(() => {
@@ -192,33 +286,33 @@ const Indicencias = () => {
         <div className=' flex  gap-4 mb-5 justify-end'>
           {
             incidencias ? (
-                  <>
-                      <div className='w-auto' >
-            <ButtonExcel incidencias={incidencias} />
-          </div>
-          <div className='w-auto'>
-            <PDFDownloadLink document={<ReportPDF incidencias={incidencias}/>} fileName='ReporteTickets.pdf'>
-              {
-                ({ loading }) => loading ? "Cargando..."
-                   : (
-                    <button className='  h-full text-white bg-regal-blue hover:bg-hover-regal rounded-md p-3 font-bold' >
+              <>
+                <div className='w-auto' >
+                  <ButtonExcel incidencias={incidencias} />
+                </div>
+                <div className='w-auto'>
+                  <PDFDownloadLink document={<ReportPDF incidencias={incidencias} />} fileName='ReporteTickets.pdf'>
+                    {
+                      ({ loading,blob,url }) => loading ? "Cargando..."
+                        : (
+                          <button className='  h-full text-white bg-regal-blue hover:bg-hover-regal rounded-md p-3 font-bold' onClick={()=>{DownloadPDF(blob,url)}} >
 
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
-                      </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6" >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
+                            </svg>
 
-                    </button>
-                  )
-              }
-            </PDFDownloadLink>
+                          </button>
+                        )
+                    }
+                  </PDFDownloadLink>
 
 
-          </div>
-                  </>
-            ): "Cargando..."
+                </div>
+              </>
+            ) : "Cargando..."
           }
-          
+
 
 
         </div>

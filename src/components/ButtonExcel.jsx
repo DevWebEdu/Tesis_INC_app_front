@@ -1,13 +1,26 @@
 import React, { useState } from 'react'
 import * as XLSX from 'xlsx'
+import { useTiming } from '../hooks/useTiming'
+import Swal from 'sweetalert2'
 
 const ButtonExcel = ({ incidencias }) => {
     const [loading, setLoading] = useState(false)
-    const [incidenciasFinales, setIncidenciasFinales] = useState([])
+    const [minutes, setMinutes] = useState(0)
+    const [seconds, setSeconds] = useState(0)
+    const { agregandoDataCronometrada } = useTiming()
+
+    const handleDownloadExcel = async () => {
+      
+        var timer = setInterval(() => {
+            setSeconds(seconds + 1)
+            if (seconds === 59) {
+              setMinutes(minutes + 1)
+              setSeconds(0)
+            }
+      
+          }, 1000)
 
 
-    const handleDownloadExcel = () => {
-        console.log(incidencias)
         const incs = incidencias.map(inc => {
             return {
                 "Incidencia": inc.id,
@@ -32,7 +45,26 @@ const ButtonExcel = ({ incidencias }) => {
             XLSX.writeFile(libro, "IncidenciasReporteExcel.xlsx")
             setLoading(false)
         }, 1000)
+
+        const datosTiming = {
+            origen: 'ereporte',
+            tiempo: `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds} `
+          }
+
+
+          //insertamos el tiempo de 
+        const { data: resultTiming } = await agregandoDataCronometrada(datosTiming);
+        if(resultTiming.result) {
+    
+          Swal.fire({
+             title: 'Reporte excel generado',
+             text : `La generacion del reporte excel tomó ${resultTiming.data[0].tiempo}`,
+             icon: 'success',
+             timer: 4000
+           })
+
     }
+}
 
     return (
 

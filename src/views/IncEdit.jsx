@@ -6,21 +6,25 @@ import { cod_apps } from '../data/apps'
 import useIncidencias from '../hooks/useIncidencias'
 import Swal from 'sweetalert2'
 import Alerta from '../components/Alerta'
+import { Cronometer } from '../components/Cronometer'
+import { useTiming } from '../hooks/useTiming'
 
 const IncEdit = () => {
   const navigate = useNavigate()
   const { inc_id } = useParams()
   const { consultarIncidenciaDashboard } = useDashboard()
-  const {insertarIncidencia} = useIncidencias()
-  const [errores,setErrores] = useState([])
+  const { insertarIncidencia } = useIncidencias()
+  const { agregandoDataCronometrada } = useTiming()
+  const [errores, setErrores] = useState([])
   const [incidencia, setIncidencia] = useState()
   const [categoria, setCategoria] = useState()
+  const [tiempoRedaccion, setTiempoRedaccion] = useState({ 'minutes': 0, 'seconds': 0 })
   const codIncRef = createRef()
   const fechaEnvioRef = createRef()
   const resumenRef = createRef()
   const notaRef = createRef()
   const fechaAtencionRef = createRef()
-  const observacionRef = createRef ()
+  const observacionRef = createRef()
 
   const ObtenerIncidencia = async () => {
     try {
@@ -36,35 +40,70 @@ const IncEdit = () => {
     setCategoria(e.target.value)
   }
 
+
+
   useEffect(() => {
     ObtenerIncidencia()
   }, [])
 
+
+
   const handleSubmit = async e => {
     e.preventDefault()
     const datos = {
-      fecha_envio : fechaEnvioRef.current.value,
-      resumen : resumenRef.current.value,
-      apps_id : categoria,
+      fecha_envio: fechaEnvioRef.current.value,
+      resumen: resumenRef.current.value,
+      apps_id: categoria,
       nota: notaRef.current.value,
-      fecha_atencion : fechaAtencionRef.current.value,
-      observacion : observacionRef.current.value
+      fecha_atencion: fechaAtencionRef.current.value,
+      observacion: observacionRef.current.value,
 
     }
 
-    const data = await insertarIncidencia(inc_id,datos,setErrores)
-    if(data) {
+    const datosTiming = {
+      origen: 'rticket',
+      tiempo: `${tiempoRedaccion.minutes < 10 ? "0" + tiempoRedaccion.minutes : tiempoRedaccion.minutes}:${tiempoRedaccion.seconds < 10 ? "0" + tiempoRedaccion.seconds : tiempoRedaccion.seconds} `
+    }
+
+
+    //insertamos el tiempo de 
+    const {data:resultTiming} =  await agregandoDataCronometrada(datosTiming);
+    // console.log(resultTiming.data[0].descripcion)
+    // console.log(resultTiming.data[0].tiempo)
+    // console.log(resultTiming.result)
+    //actualizamos la data que esta en el dashboard ya que se inserto inicialmente en la ruta '/' 
+     const data = await insertarIncidencia(inc_id, datos, setErrores)
+     if (data && resultTiming.result) {
+        navigate('/');  
+
       Swal.fire({
-        title: data.data.message
-      })
-      navigate('/incs');
-    }
+         title: data.data.message,
+         text : `La incidencia tomó ${resultTiming.data[0].tiempo}`,
+         icon: 'success',
+         timer: 4000
+       })
+       
+     }
   }
   if (!incidencia) return <div> Cargando </div>
 
+  // Obtenemos la data de los minutos y segundos del componente Cronometro
+  const ObteniendoDatosCronometro = ({ minutes, seconds }) => {
+    setTiempoRedaccion({
+      minutes,
+      seconds
+    })
+  }
+
+
+
+
   return (
     <>
-      <h1 className='text-2xl md:text-4xl font-black mt-4 '> Atendiendo la Incidencia : {incidencia.data[0].id}   </h1>
+      <div className='flex justify-between'>
+        <h1 className='text-2xl  font-black mt-4 '> Atendiendo la Incidencia : {incidencia.data[0].id}   </h1>
+        <Cronometer ObteniendoDatosCronometro={ObteniendoDatosCronometro} />
+      </div>
       <div className=' bg-wihte  w-full shadow-md rounded-md mt-10 px-5 py-10 ' >
         <form noValidate className='grid md:col-span-1 grid-cols-4 gap-4' onSubmit={handleSubmit}>
           <div className='mb-4 md:col-span-2 col-span-4'>
@@ -85,7 +124,7 @@ const IncEdit = () => {
           </div>
           <div className='mb-4 md:col-span-2 col-span-4'>
             <label htmlFor="fecha_envio" className='text-slate-800'>Fecha de alta Entity:  </label>
-            <input type="date" id='fecha_envio'  ref={fechaEnvioRef} className='mt-2 w-full p-3 rounded-md outline-none border-2  border-regal-blue' name='fecha_envio' />
+            <input type="date" id='fecha_envio' ref={fechaEnvioRef} className='mt-2 w-full p-3 rounded-md outline-none border-2  border-regal-blue' name='fecha_envio' />
           </div>
           <div className='mb-4 md:col-span-2 col-span-4'>
             <label htmlFor="resumen" className='text-slate-800'>Ingresa el resumen del Ticket:  </label>
@@ -93,7 +132,7 @@ const IncEdit = () => {
           </div>
           <div className='mb-4 md:col-span-2 col-span-4 '>
             <label htmlFor="nota" className="text-slate-800">Ingresa la nota del Ticket: </label>
-            <textarea id="nota" name='nota'  ref={notaRef} className="mt-2 w-full p-3 resize-none rounded-md outline-none border-2 h-28 border-regal-blue" placeholder="Ingresa la nota del ticket"></textarea>
+            <textarea id="nota" name='nota' ref={notaRef} className="mt-2 w-full p-3 resize-none rounded-md outline-none border-2 h-28 border-regal-blue" placeholder="Ingresa la nota del ticket"></textarea>
           </div>
           <div className='mb-4 md:col-span-2 col-span-4'>
             <label htmlFor="fecha_atencion" className='text-slate-800'>Fecha de atencion Entity:  </label>
@@ -108,8 +147,8 @@ const IncEdit = () => {
               errores ? errores.map((error, i) => <Alerta key={i}>{error}</Alerta>) : null
             }
           </div>
-          <input type="submit"  value='Atender!!' className='bg-regal-blue col-span-4 hover:bg-hover-regal rounded-md text-white w-full  p-3 uppercase font-bold cursor-pointer' />
-          
+          <input type="submit" value='Atender!!' className='bg-regal-blue col-span-4 hover:bg-hover-regal rounded-md text-white w-full  p-3 uppercase font-bold cursor-pointer' />
+
         </form>
       </div>
     </>
