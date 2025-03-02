@@ -12,6 +12,7 @@ export const links = [
     {
       id:3,
       path:'/users',
-      name: 'Usuarios'
+      name: 'Usuarios',
+      permission : '1'
     }
   ]

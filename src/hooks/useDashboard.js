@@ -21,7 +21,7 @@ const useDashboard = () => {
             })
            
             setErrores([])           
-          
+          navigate('/')
             return data
         } catch (error) {
             setErrores(Object.values(error?.response?.data?.errors))

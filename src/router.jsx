@@ -6,12 +6,16 @@ import Login from "./views/Login";
 import Indicencias from "./views/Indicencias";
 import Users from "./views/Users";
 import IncEdit from "./views/IncEdit";
+import PrivateRouteAuth from "./private/PrivateRouteAuth";
+import PrivateRouteAdmin from "./private/PrivateRouteAdmin";
 
 
 const router = createBrowserRouter([
     {
         path: '/',
-        element: <DashboardLayout/>,
+        element: (
+            <PrivateRouteAuth element={<DashboardLayout/>} />
+        ),
         
         children: [{
             index:true , 
@@ -23,7 +27,7 @@ const router = createBrowserRouter([
         } ,
         {
             path: '/users',
-            element: <Users/>
+            element:( <PrivateRouteAdmin element={<Users/>}/>)
         } ,
         {
             path : '/incs/:inc_id',

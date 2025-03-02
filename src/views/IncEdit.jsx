@@ -100,20 +100,20 @@ const IncEdit = () => {
 
   return (
     <>
-      <div className='flex justify-between'>
-        <h1 className='text-2xl  font-black mt-4 '> Atendiendo la Incidencia : {incidencia.data[0].id}   </h1>
+      <div className='flex justify-between '>
+        <h1 className='text-2xl  font-black mt-4 dark:text-tcolor-dark '> Atendiendo la Incidencia : {incidencia.data[0].id}   </h1>
         <Cronometer ObteniendoDatosCronometro={ObteniendoDatosCronometro} />
       </div>
       <div className=' bg-wihte  w-full shadow-md rounded-md mt-10 px-5 py-10 ' >
         <form noValidate className='grid md:col-span-1 grid-cols-4 gap-4' onSubmit={handleSubmit}>
           <div className='mb-4 md:col-span-2 col-span-4'>
-            <label htmlFor="cod_inc" className='text-slate-800'>Codigo de Incidencia:  </label>
+            <label htmlFor="cod_inc" className='text-slate-800 dark:text-tcolor-dark'>Codigo de Incidencia:  </label>
             <input type="text" id='cod_inc' ref={codIncRef} defaultValue={incidencia.data[0].id} readOnly disabled className='mt-2 w-full p-3   rounded-md outline-none border-2  border-regal-blue' name='cod_inc' placeholder='INC000999999' />
           </div>
           <div className='mb-4 md:col-span-2 col-span-4'>
             {/* El usuario seleccionara la aplicacion a la cual quiere consultar y se filtraran internamente en el back por el codigo de aplicacion  */}
-            <label htmlFor="cod_app" className='text-slate-800'>Filtro por nombre de aplicación:</label>
-            <select id="cod_app" onChange={handleChangeSelect} name='cod_app' className="bg-gray-50 border-2  text-gray-900 focus:ring-regal-blue focus:border-regal-blue  rounded-md  w-full mt-2  p-3 outline-none border-regal-blue ">
+            <label htmlFor="cod_app" className='text-slate-800 dark:text-tcolor-dark'>Filtro por nombre de aplicación:</label>
+            <select id="cod_app" onChange={handleChangeSelect} name='cod_app' className="bg-gray-50 border-2 dark:text-tcolor-dark text-gray-900 focus:ring-regal-blue focus:border-regal-blue  rounded-md  w-full mt-2  p-3 outline-none border-regal-blue ">
               <option defaultValue >Elige la aplicacion </option>
               {
                 cod_apps.map(({ cod_app, nom_app }) => (
@@ -123,23 +123,23 @@ const IncEdit = () => {
             </select>
           </div>
           <div className='mb-4 md:col-span-2 col-span-4'>
-            <label htmlFor="fecha_envio" className='text-slate-800'>Fecha de alta Entity:  </label>
-            <input type="date" id='fecha_envio' ref={fechaEnvioRef} className='mt-2 w-full p-3 rounded-md outline-none border-2  border-regal-blue' name='fecha_envio' />
+            <label htmlFor="fecha_envio" className='text-slate-800 dark:text-tcolor-dark'>Fecha de alta Entity:  </label>
+            <input type="date" id='fecha_envio' ref={fechaEnvioRef} className='mt-2 w-full p-3  rounded-md outline-none border-2  border-regal-blue' name='fecha_envio' />
           </div>
           <div className='mb-4 md:col-span-2 col-span-4'>
-            <label htmlFor="resumen" className='text-slate-800'>Ingresa el resumen del Ticket:  </label>
+            <label htmlFor="resumen" className='text-slate-800 dark:text-tcolor-dark'>Ingresa el resumen del Ticket:  </label>
             <input type="text" id='resumen' ref={resumenRef} className='mt-2 w-full p-3  rounded-md outline-none border-2  border-regal-blue' name='resumen' placeholder='No accede a módulo trabajadores' />
           </div>
           <div className='mb-4 md:col-span-2 col-span-4 '>
-            <label htmlFor="nota" className="text-slate-800">Ingresa la nota del Ticket: </label>
+            <label htmlFor="nota" className="text-slate-800 dark:text-tcolor-dark ">Ingresa la nota del Ticket: </label>
             <textarea id="nota" name='nota' ref={notaRef} className="mt-2 w-full p-3 resize-none rounded-md outline-none border-2 h-28 border-regal-blue" placeholder="Ingresa la nota del ticket"></textarea>
           </div>
           <div className='mb-4 md:col-span-2 col-span-4'>
-            <label htmlFor="fecha_atencion" className='text-slate-800'>Fecha de atencion Entity:  </label>
+            <label htmlFor="fecha_atencion" className='text-slate-800 dark:text-tcolor-dark '>Fecha de atencion Entity:  </label>
             <input type="date" id='fecha_atencion' ref={fechaAtencionRef} className='mt-2 w-full p-3  rounded-md outline-none border-2  border-regal-blue' name='fecha_atencion' />
           </div>
           <div className='mb-4  col-span-4 '>
-            <label htmlFor="observacion" className="text-slate-800">Ingresa la Observacion/Resolucioin del ticket: </label>
+            <label htmlFor="observacion" className="text-slate-800 dark:text-tcolor-dark ">Ingresa la Observacion/Resolucioin del ticket: </label>
             <textarea id="observacion" ref={observacionRef} name='observacion' className="mt-2 w-full p-3 resize-none rounded-md outline-none border-2 h-28 border-regal-blue" placeholder="Ingresa la observacion del ticket"></textarea>
           </div>
           <div className='col-span-4'>

@@ -15,7 +15,7 @@ const useIncidencias = () => {
         return data
     }
 
-    const {data,error,isLoading} = useSWR('/api/incidencias,',fetcher)
+    const {data,error,isLoading} = useSWR('/api/incidencias',fetcher)
 
     const insertarIncidencia = async (id,datos,setErrores)  =>{
         try {

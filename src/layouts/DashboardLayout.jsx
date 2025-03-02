@@ -1,20 +1,18 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import SideBar from '../components/SideBar'
-import useAuth from '../hooks/useAuth'
+
+import useAuth1 from '../hooks/useAuth1'
 
 const DashboardLayout = () => {
 
-  const {user,error } = useAuth({
-    middleware:'auth'
-  })
   return (
-    <div className='flex  '>
+    <div className='flex dark:bg-color-layout-dark min-h-screen  bg-color-layour-light'>
         <SideBar/>
-        <div className='w-full  p-5  '>
+        <div className='container mx-10 sm:mx-auto mt-16'>
         <Outlet/>
         </div>
-        
+          
     </div>
   )
 }
