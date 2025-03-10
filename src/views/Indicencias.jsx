@@ -1,32 +1,43 @@
 import React, { createRef, useEffect, useState } from 'react'
 import TableInc from '../components/TableInc'
-import { inc_atendidas } from '../data/inc_atendidas'
-import { cod_apps } from '../data/apps'
 import useIncidencias from '../hooks/useIncidencias'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 import { useNavigate } from 'react-router-dom'
 import ButtonExcel from '../components/ButtonExcel'
-import ReportPDF from '../reports/ReportPDF'
-import { PDFDownloadLink } from '@react-pdf/renderer'
+
+
+import useApp from '../hooks/useApp'
+import ReportePDFNew from '../reports/ReportePDFNew'
 import { useTiming } from '../hooks/useTiming'
+import { IncViewModal } from '../components/IncViewModal'
 
 const Indicencias = () => {
   const navigate = useNavigate()
-
-  const { agregandoDataCronometrada } = useTiming()
   const [incidencias, setIncidencias] = useState([])
   const [paginaActual, setPaginaActual] = useState(1)
   const [ultipaPagina, setUltimaPagina] = useState()
   const [categoria, setCategoria] = useState()
   const [busqueda, setBusqueda] = useState('')
+  const token = localStorage.getItem('AUTH_TOKEN')
   const [minutes, setMinutes] = useState(0)
   const [seconds, setSeconds] = useState(0)
-  const token = localStorage.getItem('AUTH_TOKEN')
+  const {agregandoDataCronometrada} = useTiming()
   const fechaEnvioFromRef = createRef()
   const fechaEnvioToRef = createRef()
   const { data, filtrarIncidencias } = useIncidencias()
   const [disableButtonFilter, setDisableButtonFilter] = useState(true)
+  const [apps, setApps] = useState()
+  const { getApplications } = useApp()
+  const [showModal,setShowModal] = useState(false)
+  const [incModalShow,setIncModalShow] = useState(null)
+
+  //trae todas las apps
+  const obteniendoAplicaciones = async () => {
+    const { data } = await getApplications()
+
+    setApps(data)
+  }
 
   // Se realizara dos busquedas 
   /*
@@ -35,6 +46,7 @@ const Indicencias = () => {
    buscar para preparar la data y con el boton , icono download , para preparar el pdf con al presionarlo
   
   */
+  // limpiar inputs
   const limpiarFilros = async () => {
     fechaEnvioToRef.current.value = ''
     fechaEnvioFromRef.current.value = ''
@@ -57,7 +69,7 @@ const Indicencias = () => {
     setUltimaPagina(data.data.meta.last_page)
   }
 
-
+  // metodo para next paginacion
   const handlePaginationNext = async e => {
 
     const url = `http://127.0.0.1:8000/api/incidencias?page=${paginaActual + 1}`
@@ -65,6 +77,7 @@ const Indicencias = () => {
 
   }
 
+  // metodo para back paginacion
   const handlePaginationPrevious = async e => {
 
     const url = `http://127.0.0.1:8000/api/incidencias?page=${paginaActual - 1}`
@@ -73,7 +86,7 @@ const Indicencias = () => {
   }
 
 
-
+  // Input para  buscar por codigo de incidencia
   const handleInput = (e) => {
 
     const inputValue = e.target.value
@@ -172,7 +185,6 @@ const Indicencias = () => {
         setMinutes(minutes + 1)
         setSeconds(0)
       }
-
     }, 1000)
 
     const fecha_incio = fechaEnvioFromRef.current.value
@@ -183,7 +195,7 @@ const Indicencias = () => {
 
     clearInterval(timer)
   }
-
+  // metodo para habilitar el boton buscar  apps
   const handleChangeSelect = e => {
     if (e.target.value != 'Elige la aplicacion') {
       setDisableButtonFilter(false)
@@ -192,41 +204,7 @@ const Indicencias = () => {
     }
     setCategoria(e.target.value)
   }
-
-  //midiendo el tiempo de cuanto demora la descarga del pdf
-  const DownloadPDF = async (blob, url) => {
-    console.log(blob, url)
-    var timer = setInterval(() => {
-      setSeconds(seconds + 1)
-      if (seconds === 59) {
-        setMinutes(minutes + 1)
-        setSeconds(0)
-      }
-
-    }, 1000)
-
-    if (blob && url) {
-      const datosTiming = {
-        origen: 'ereporte',
-        tiempo: `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds} `
-      }
-
-
-      //insertamos el tiempo de 
-      const { data: resultTiming } = await agregandoDataCronometrada(datosTiming);
-
-      Swal.fire({
-        title: 'PFD descargado correctamente',
-        text: `La generacion del PDF tomó ${resultTiming.data[0].tiempo}`,
-        icon: 'success',
-        timer: 4000,
-
-      })
-      clearInterval(timer)
-    }
-  }
-
-
+  // metodo para habilitar el boton buscar  fecha_envio
   const onChangeDateFrom = (e) => {
     fechaEnvioFromRef.current.value = e.target.value
     if (fechaEnvioFromRef.current.value) {
@@ -235,7 +213,7 @@ const Indicencias = () => {
       setDisableButtonFilter(true)
     }
   }
-
+  // metodo para habilitar el boton buscar  fecha_atencion
   const onChangeDateTo = (e) => {
     fechaEnvioToRef.current.value = e.target.value
     if (fechaEnvioToRef.current.value) {
@@ -245,17 +223,29 @@ const Indicencias = () => {
     }
   }
 
+  // metodo para enviar el id desde el. hijo  TableInc , y abre el modal
+  const showModalHandler = id => {
+    setShowModal(true)
+    setIncModalShow(id)
+  }
+
+  // metodo para enviar el id desde el hijo  TableInc , y cierra el modal
+  const closeModal =() =>{
+
+    setShowModal(false)
+    setIncModalShow(null)
+  }
 
   useEffect(() => {
     ObteniendoPaginacionIncidencias()
-
+    obteniendoAplicaciones()
   }, [])
 
   return (
     <>
       {/* En esta vista se recopilaran todas las incidencias atentidas es decir las incidencias con estado 2 y registradas en la tabla inc-atendidas */}
       {/* El usuario podra realizar las siguientes acciones, crear un reporte de las incidencias atendidas, buscar, crear reportes de las incidencias */}
-      <div className='' >
+      <div className=''>
         <h1 className='text-2xl md:text-4xl font-black mt-4 my-10 cols-span-4 dark:text-tcolor-dark' >Filtra tu busqueda </h1>
         <div className='mb-4 mt-5 '>
           <label htmlFor="cod_inc" className='text-slate-800 dark:text-tcolor-dark'>Busqueda por codigo de Incidencia:</label>
@@ -270,8 +260,8 @@ const Indicencias = () => {
             <select id="cod_inc" value={categoria} onChange={handleChangeSelect} className="bg-gray-50 border-2  text-gray-900 focus:ring-regal-blue focus:border-regal-blue  rounded-md  w-full mt-2  p-3 outline-none border-regal-blue ">
               <option defaultValue >Elige la aplicacion </option>
               {
-                cod_apps.map(({ cod_app, nom_app }) => (
-                  <option value={cod_app} key={cod_app} >{nom_app}</option>
+                apps?.map(({ id, name_app }) => (
+                  <option value={id} key={id} >{name_app}</option>
                 ))
               }
             </select>
@@ -310,24 +300,9 @@ const Indicencias = () => {
                   <ButtonExcel incidencias={incidencias} />
                 </div>
                 <div className='w-auto'>
-                  <PDFDownloadLink document={<ReportPDF incidencias={incidencias} />} fileName='ReporteTickets.pdf'>
-                    {
-                      ({ loading, blob, url }) => loading ? "Cargando..."
-                        : (
-                          <button className='  h-full text-white bg-regal-blue hover:bg-hover-regal rounded-md p-3 font-bold' onClick={() => { DownloadPDF(blob, url) }} >
-
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6" >
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
-                            </svg>
-
-                          </button>
-                        )
-                    }
-                  </PDFDownloadLink>
-
-
+                  <ReportePDFNew incidencias={incidencias} />
                 </div>
+
               </>
             ) : "Cargando..."
           }
@@ -338,7 +313,8 @@ const Indicencias = () => {
 
 
       </div >
-      <TableInc inc_atendidas={incidencias} />
+
+      <TableInc inc_atendidas={incidencias}  onShowModal={showModalHandler}/>
       {/* BOTONES next - previous */}
       <div className='w-full  p-5 mt-3 flex flex-row justify-center items-center'>
         {
@@ -366,6 +342,16 @@ const Indicencias = () => {
           )}
 
       </div>
+
+      {/* Modal de incidencia */}
+      { 
+        showModal && (
+          <IncViewModal
+              onClose={closeModal}
+              incidencia_id={incModalShow}
+          />
+        )
+      }
     </>
   )
 }

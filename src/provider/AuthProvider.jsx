@@ -23,7 +23,7 @@ export const AuthProvider = ({children}) => {
             setUser(user)
             // await mutate()
         }catch (error) {
-            setErrores(Object.values(error?.response?.data?.errors))
+            console.log(error)
         }
     }
 

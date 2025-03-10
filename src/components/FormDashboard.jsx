@@ -1,8 +1,9 @@
-import React, { createRef, useState } from 'react'
+import React, { createRef, useEffect, useState } from 'react'
 import { cod_apps } from '../data/apps'
 import useDashboard from '../hooks/useDashboard'
 import Alerta from './Alerta'
 import { useNavigate } from 'react-router-dom'
+import useApp from '../hooks/useApp'
 
 
 function FormDashboard() {
@@ -11,11 +12,19 @@ function FormDashboard() {
     const [errores, setErrores] = useState([])
     const [categoria, setCategoria] = useState()
     const { AgregarIncidenciaDashboard } = useDashboard()
+    const {getApplications} = useApp()
+    const [apps, setApps] = useState()
 
     const handleChangeSelect = e => {
 
         setCategoria(e.target.value)
 
+    }
+
+    const obteniendoAplicaciones = async () =>{
+        const {data} = await getApplications()
+
+        setApps(data)
     }
 
     const inputsClean = () => {
@@ -35,9 +44,11 @@ function FormDashboard() {
         inputsClean()
     }
 
+   
 
-
-
+    useEffect(() => {
+        obteniendoAplicaciones()
+    } ,[])
     return (
         <div className=' flex flex-col items-center container mx-auto  '>
             <h1 className='text-2xl md:text-4xl font-black mt-4 dark:text-tcolor-dark' >¿Que Incidencia Atenderás? </h1>
@@ -67,8 +78,8 @@ function FormDashboard() {
                     <select id="cod_app" onChange={(e) => handleChangeSelect(e)} value={categoria} name='cod_app' className="bg-gray-50  text-sm text-gray-900 focus:ring-regal-blue   rounded-md  w-full mt-2  p-2 outline-none ">
                         <option defaultValue >Elige la aplicacion </option>
                         {
-                            cod_apps.map(({ cod_app, nom_app }) => (
-                                <option value={cod_app} key={cod_app} >{nom_app}</option>
+                            apps?.map(({ id, name_app }) => (
+                                <option value={id} key={id} >{name_app}</option>
                             ))
                         }
                     </select>

@@ -19,7 +19,7 @@ const router = createBrowserRouter([
         
         children: [{
             index:true , 
-            element: <Dashboard/>
+            element: <Dashboard/>,
         },
         {
             path: '/incs',
@@ -32,7 +32,7 @@ const router = createBrowserRouter([
         {
             path : '/incs/:inc_id',
             element : <IncEdit/>
-        }  
+        }
     ]
     },
     {
